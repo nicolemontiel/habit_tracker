@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'register_screen.dart';
+import 'habit_tracker_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -15,83 +16,24 @@ class _LoginScreenState extends State<LoginScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
 
-  // Default credentials for dummy validation
+  // Default credentials
   final String defaultUsername = 'testuser';
   final String defaultPassword = 'password123';
 
-  bool _isLoading = false;
-  late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  void _login() {
+    // The login logic goes here
+    print("login logic here");
 
-  @override
-  void initState() {
-    super.initState();
-    _initializeNotifications();
-  }
+    final username = _usernameController.text;
+    final password = _passwordController.text;
 
-  void _initializeNotifications() {
-    flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initializationSettings =
-        InitializationSettings(android: initializationSettingsAndroid);
-    flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  }
-
-  Future<void> _showNotification() async {
-    const AndroidNotificationDetails androidDetails = AndroidNotificationDetails(
-      'login_channel',
-      'Login Notifications',
-      channelDescription: 'Notification channel for login alerts',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
-    const NotificationDetails notificationDetails =
-        NotificationDetails(android: androidDetails);
-    await flutterLocalNotificationsPlugin.show(
-      0,
-      'Welcome',
-      'You have successfully logged in!',
-      notificationDetails,
-    );
-  }
-
-  void _login() async {
-    String username = _usernameController.text.trim();
-    String password = _passwordController.text;
-
-    if (username.isEmpty || password.isEmpty) {
-      Fluttertoast.showToast(msg: "Please enter both username and password");
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      // Simulate a network call delay
-      await Future.delayed(const Duration(seconds: 2));
-
-      // Check credentials against our dummy values
-      if (username == defaultUsername && password == defaultPassword) {
-        // Save login state with shared_preferences
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setBool("isLoggedIn", true);
-
-        Fluttertoast.showToast(msg: "Login successful");
-        await _showNotification();
-
-        // TODO: Navigate to your main/home screen
-        // Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => HomeScreen()));
-      } else {
-        Fluttertoast.showToast(msg: "Invalid credentials");
-      }
-    } catch (error) {
-      Fluttertoast.showToast(msg: "An error occurred: $error");
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+    if (username == defaultUsername && password == defaultPassword) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => HabitTrackerScreen(username: username),
+        ),
+      );
     }
   }
 
@@ -161,7 +103,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () {
-                      // Add forgot password logic here
+                      // Logic for forgot password can be added here
                     },
                     child: const Text(
                       'Forgot password?',
@@ -170,27 +112,25 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                _isLoading
-                    ? const CircularProgressIndicator()
-                    : ElevatedButton(
-                        onPressed: _login,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.blue.shade600,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30.0),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 80, vertical: 15),
-                        ),
-                        child: const Text(
-                          'Log in',
-                          style: TextStyle(
-                            fontSize: 18,
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+                ElevatedButton(
+                  onPressed: _login,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade600,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30.0),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 80, vertical: 15),
+                  ),
+                  child: const Text(
+                    'Log in',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
                 const SizedBox(height: 20),
                 const Text(
                   'or',
