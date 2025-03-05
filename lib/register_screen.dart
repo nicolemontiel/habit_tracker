@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import 'package:fluttertoast/fluttertoast.dart';
 import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -12,7 +12,7 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   final _nameController = TextEditingController();
   final _usernameController = TextEditingController();
-  double _age = 25; // Default age set to 25
+  double _age = 25; // Default age
   String _country = 'United States';
   List<String> _countries = [];
   List<String> selectedHabits = [];
@@ -28,6 +28,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     'Journal',
     'Walk 10,000 Steps'
   ];
+
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -58,8 +60,82 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _register() async {
-    // dummy for now
-    print("registration logic here");
+    String name = _nameController.text.trim();
+    String username = _usernameController.text.trim();
+
+    if (name.isEmpty || username.isEmpty) {
+      Fluttertoast.showToast(msg: "Please fill in all required fields");
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      // Simulate a network call delay for registration
+      await Future.delayed(const Duration(seconds: 2));
+
+      // Dummy registration success logic
+      Fluttertoast.showToast(msg: "Registration successful");
+
+      // Navigate back to the login screen
+      Navigator.pushReplacement(
+          context, MaterialPageRoute(builder: (context) => const LoginScreen()));
+    } catch (error) {
+      Fluttertoast.showToast(msg: "Registration failed: $error");
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Widget _buildInputField(
+      TextEditingController controller, String hint, IconData icon) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          prefixIcon: Icon(icon, color: Colors.blue.shade700),
+          hintText: hint,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCountryDropdown() {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(30),
+      ),
+      child: DropdownButton<String>(
+        value: _country,
+        icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
+        isExpanded: true,
+        underline: const SizedBox(),
+        items: _countries.map((String value) {
+          return DropdownMenuItem<String>(
+            value: value,
+            child: Text(value),
+          );
+        }).toList(),
+        onChanged: (newValue) {
+          setState(() {
+            _country = newValue!;
+          });
+        },
+      ),
+    );
   }
 
   @override
@@ -80,7 +156,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => LoginScreen()),
+              MaterialPageRoute(builder: (context) => const LoginScreen()),
             );
           },
         ),
@@ -131,13 +207,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   children: availableHabits.map((habit) {
                     final isSelected = selectedHabits.contains(habit);
                     return GestureDetector(
-                      onTap: () => null,
+                      onTap: () {
+                        setState(() {
+                          if (isSelected) {
+                            selectedHabits.remove(habit);
+                          } else {
+                            selectedHabits.add(habit);
+                          }
+                        });
+                      },
                       child: Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 20, vertical: 10),
                         decoration: BoxDecoration(
-                          color:
-                              isSelected ? Colors.blue.shade600 : Colors.white,
+                          color: isSelected
+                              ? Colors.blue.shade600
+                              : Colors.white,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(color: Colors.blue.shade700),
                         ),
@@ -155,77 +240,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 20),
                 Center(
-                  child: ElevatedButton(
-                    onPressed: _register,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue.shade600,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30.0),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 80, vertical: 15),
-                    ),
-                    child: const Text(
-                      'Register',
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
+                  child: _isLoading
+                      ? const CircularProgressIndicator()
+                      : ElevatedButton(
+                          onPressed: _register,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade600,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30.0),
+                            ),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 80, vertical: 15),
+                          ),
+                          child: const Text(
+                            'Register',
+                            style: TextStyle(
+                              fontSize: 18,
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                 ),
               ],
             ),
           ),
         ),
-      ),
-    );
-  }
-
-  Widget _buildInputField(
-      TextEditingController controller, String hint, IconData icon) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: TextField(
-        controller: controller,
-        decoration: InputDecoration(
-          prefixIcon: Icon(icon, color: Colors.blue.shade700),
-          hintText: hint,
-          border: InputBorder.none,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCountryDropdown() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: DropdownButton<String>(
-        value: _country,
-        icon: Icon(Icons.arrow_drop_down, color: Colors.blue.shade700),
-        isExpanded: true,
-        underline: const SizedBox(),
-        items: _countries.map((String value) {
-          return DropdownMenuItem<String>(
-            value: value,
-            child: Text(value),
-          );
-        }).toList(),
-        onChanged: (newValue) {
-          setState(() {
-            _country = newValue!;
-          });
-        },
       ),
     );
   }
