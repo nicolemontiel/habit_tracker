@@ -18,10 +18,12 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
   @override
   void initState() {
     super.initState();
+    // If you want the AppBar title to show the username,
+    // assign it here: name = widget.username;
   }
 
   Future<void> _saveHabits() async {
-    //save habits to preferences in the future
+    // Save habits to preferences in the future
   }
 
   Color _getColorFromHex(String hexColor) {
@@ -47,6 +49,8 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // This AppBar automatically includes the hamburger menu icon
+      // when you have a Drawer in the Scaffold.
       appBar: AppBar(
         backgroundColor: Colors.blue.shade700,
         title: Text(
@@ -59,6 +63,83 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
         ),
         automaticallyImplyLeading: true,
       ),
+
+      // Add the Drawer to get the hamburger menu on the top-left
+      drawer: Drawer(
+        // You can set a specific width if desired:
+        // width: MediaQuery.of(context).size.width * 0.7,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Top blue header with "Menu"
+            Container(
+              color: Colors.blue.shade700,
+              height: 130,
+              padding: const EdgeInsets.only(left: 20, bottom: 20),
+              alignment: Alignment.bottomLeft,
+              child: const Text(
+                'Menu',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 28,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            // White area for menu items
+            Expanded(
+              child: Container(
+                color: Colors.white,
+                child: ListView(
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.settings),
+                      title: const Text('Configure'),
+                      onTap: () {
+                        Navigator.pop(context); // Close the drawer
+                        // TODO: Navigate to your "Configure" screen
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.person),
+                      title: const Text('Personal Info'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Navigate to your "Personal Info" screen
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.bar_chart),
+                      title: const Text('Reports'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Navigate to your "Reports" screen
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.notifications),
+                      title: const Text('Notifications'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Navigate to your "Notifications" screen
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.logout),
+                      title: const Text('Sign Out'),
+                      onTap: () {
+                        Navigator.pop(context);
+                        // TODO: Implement your sign-out logic
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+
       body: Column(
         children: [
           const Padding(
@@ -171,25 +252,27 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
                             ],
                           ),
                         ),
-                        child: _buildHabitCard(habit, habitColor,
-                            isCompleted: true),
+                        child:
+                            _buildHabitCard(habit, habitColor, isCompleted: true),
                       );
                     },
                   ),
                 ),
         ],
       ),
+
+      // If you want the FAB to always be visible, remove the conditional check
       floatingActionButton: selectedHabitsMap.isEmpty
           ? FloatingActionButton(
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => AddHabitScreen(),
+                    builder: (context) => const AddHabitScreen(),
                   ),
                 );
               },
-              child: Icon(Icons.add),
+              child: const Icon(Icons.add),
               backgroundColor: Colors.blue.shade700,
               tooltip: 'Add Habits',
             )
@@ -197,12 +280,11 @@ class _HabitTrackerScreenState extends State<HabitTrackerScreen> {
     );
   }
 
-  Widget _buildHabitCard(String title, Color color,
-      {bool isCompleted = false}) {
+  Widget _buildHabitCard(String title, Color color, {bool isCompleted = false}) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       color: color,
-      child: Container(
+      child: SizedBox(
         height: 60, // Adjust the height for thicker cards.
         child: ListTile(
           title: Text(

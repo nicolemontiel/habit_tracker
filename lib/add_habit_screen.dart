@@ -34,7 +34,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     setState(() {
       // Hardcoded habits for demonstration
       selectedHabitsMap = {
-        'Workout': 'FF5733', // Color in hex (e.g., Amber)
+        'Workout': 'FF5733', // Color in hex
         'Meditate': 'FF33A1',
         'Read a Book': '33FFA1',
         'Drink Water': '3380FF',
@@ -112,8 +112,9 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     Map<String, String> allHabitsMap = {...selectedHabitsMap, ...completedHabitsMap};
 
     return Scaffold(
+      // Top bar is now blue
       appBar: AppBar(
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.blue, // You can use Colors.blue.shade700 if desired
         title: const Text(
           'Configure Habits',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -121,14 +122,9 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         centerTitle: true,
         elevation: 4,
       ),
+      // Body background is now white
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Colors.deepPurple.shade400, Colors.deepPurple.shade900],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
+        color: Colors.white,
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -149,7 +145,11 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
             const SizedBox(height: 20),
             const Text(
               'Select Color:',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // This was in your original code
+              ),
             ),
             const SizedBox(height: 10),
             // Dropdown to choose a habit color
@@ -163,7 +163,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               child: DropdownButton<String>(
                 value: selectedColorName,
                 isExpanded: true,
-                dropdownColor: Colors.deepPurple.shade700,
+                dropdownColor: Colors.blue.shade700, // Or keep deepPurple.shade700
                 underline: const SizedBox(),
                 items: _habitColors.keys.map((String colorName) {
                   return DropdownMenuItem<String>(
@@ -178,7 +178,9 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                       child: Text(
                         colorName,
                         style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.bold),
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   );
@@ -222,7 +224,11 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
             const SizedBox(height: 20),
             const Text(
               'Your Habits:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // This was in your original code
+              ),
             ),
             const SizedBox(height: 10),
             // Display all habits in a styled list with edit and delete actions
