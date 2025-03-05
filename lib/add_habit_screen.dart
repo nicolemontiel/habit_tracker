@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddHabitScreen extends StatefulWidget {
   const AddHabitScreen({super.key});
@@ -31,79 +34,20 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
   }
 
   Future<void> _loadHabits() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     setState(() {
-      // Hardcoded habits for demonstration
-      selectedHabitsMap = {
-        'Workout': 'FF5733', // Color in hex
-        'Meditate': 'FF33A1',
-        'Read a Book': '33FFA1',
-        'Drink Water': '3380FF',
-        'Practice Gratitude': 'FFC300'
-      };
-      completedHabitsMap = {
-        'Wake Up Early': 'FF5733',
-        'Journal': 'DAF7A6'
-      };
+      // Load habits from both maps
+      selectedHabitsMap = Map<String, String>.from(
+          jsonDecode(prefs.getString('selectedHabitsMap') ?? '{}'));
+      completedHabitsMap = Map<String, String>.from(
+          jsonDecode(prefs.getString('completedHabitsMap') ?? '{}'));
     });
   }
 
   Future<void> _saveHabits() async {
-    // This function intentionally left empty as no saving is needed
-  }
-
-  void _editHabit(String oldHabitName, String currentColorHex) {
-    TextEditingController editController =
-        TextEditingController(text: oldHabitName);
-    showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Edit Habit'),
-          content: TextField(
-            controller: editController,
-            decoration: const InputDecoration(
-              labelText: 'Habit Name',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context); // Cancel edit
-              },
-              child: const Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                String newHabitName = editController.text.trim();
-                if (newHabitName.isNotEmpty) {
-                  setState(() {
-                    // Update in selectedHabitsMap if exists, else in completedHabitsMap
-                    if (selectedHabitsMap.containsKey(oldHabitName)) {
-                      selectedHabitsMap.remove(oldHabitName);
-                      selectedHabitsMap[newHabitName] = currentColorHex;
-                    } else if (completedHabitsMap.containsKey(oldHabitName)) {
-                      completedHabitsMap.remove(oldHabitName);
-                      completedHabitsMap[newHabitName] = currentColorHex;
-                    }
-                  });
-                  Navigator.pop(context); // Close dialog
-                }
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Color _getColorFromHex(String hexColor) {
-    hexColor = hexColor.replaceAll('#', '');
-    if (hexColor.length == 6) {
-      hexColor = 'FF$hexColor'; // Add opacity if not included.
-    }
-    return Color(int.parse('0x$hexColor'));
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedHabitsMap', jsonEncode(selectedHabitsMap));
+    await prefs.setString('completedHabitsMap', jsonEncode(completedHabitsMap));
   }
 
   @override
@@ -112,58 +56,37 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
     Map<String, String> allHabitsMap = {...selectedHabitsMap, ...completedHabitsMap};
 
     return Scaffold(
-      // Top bar is now blue
       appBar: AppBar(
-        backgroundColor: Colors.blue, // You can use Colors.blue.shade700 if desired
-        title: const Text(
-          'Configure Habits',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        elevation: 4,
+        backgroundColor: Colors.blue.shade700,
+        title: Text('Configure Habits'),
       ),
-      // Body background is now white
-      body: Container(
-        color: Colors.white,
+      body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Input field for habit name with enhanced styling
             TextField(
               controller: _habitController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Habit Name',
-                labelStyle: const TextStyle(color: Colors.black),
-                filled: true,
-                fillColor: Colors.white.withOpacity(0.9),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                border: OutlineInputBorder(),
               ),
             ),
             const SizedBox(height: 20),
             const Text(
               'Select Color:',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, // This was in your original code
-              ),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            // Dropdown to choose a habit color
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: Colors.white),
-                color: Colors.white.withOpacity(0.2),
+                border: Border.all(color: Colors.grey),
               ),
               child: DropdownButton<String>(
                 value: selectedColorName,
                 isExpanded: true,
-                dropdownColor: Colors.blue.shade700, // Or keep deepPurple.shade700
                 underline: const SizedBox(),
                 items: _habitColors.keys.map((String colorName) {
                   return DropdownMenuItem<String>(
@@ -177,10 +100,7 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
                       ),
                       child: Text(
                         colorName,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                     ),
                   );
@@ -194,83 +114,53 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
               ),
             ),
             const SizedBox(height: 20),
-            // Button to add a new habit
-            Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  if (_habitController.text.isNotEmpty) {
-                    setState(() {
-                      selectedHabitsMap[_habitController.text] =
-                          selectedColor.value.toRadixString(16).toUpperCase();
-                      _habitController.clear();
-                      selectedColorName = 'Amber'; // Reset to default
-                      selectedColor = _habitColors[selectedColorName]!;
-                    });
-                  }
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ElevatedButton(
+              onPressed: () {
+                if (_habitController.text.isNotEmpty) {
+                  setState(() {
+                    // Add the new habit to the selectedHabitsMap with the chosen color
+                    selectedHabitsMap[_habitController.text] =
+                        selectedColor.value.toRadixString(16);
+                    _habitController.clear();
+                    selectedColorName = 'Amber'; // Reset to default
+                    selectedColor = _habitColors[selectedColorName]!;
+                    _saveHabits();
+                  });
+                }
+              },
+              child: Text(
+                'Add Habit',
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue.shade700,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Text(
-                  'Add Habit',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
-              'Your Habits:',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.white, // This was in your original code
-              ),
-            ),
-            const SizedBox(height: 10),
-            // Display all habits in a styled list with edit and delete actions
             Expanded(
               child: ListView(
                 children: allHabitsMap.entries.map((entry) {
                   final habitName = entry.key;
                   final habitColor = _getColorFromHex(entry.value);
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 6),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
+                  return ListTile(
+                    leading: CircleAvatar(
+                      backgroundColor: habitColor,
                     ),
-                    elevation: 4,
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: habitColor,
-                      ),
-                      title: Text(
-                        habitName,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      trailing: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit, color: Colors.blue),
-                            onPressed: () {
-                              _editHabit(habitName, entry.value);
-                            },
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              setState(() {
-                                selectedHabitsMap.remove(habitName);
-                                completedHabitsMap.remove(habitName);
-                              });
-                            },
-                          ),
-                        ],
-                      ),
+                    title: Text(habitName),
+                    trailing: IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      onPressed: () {
+                        setState(() {
+                          // Remove habit from both maps if it exists
+                          selectedHabitsMap.remove(habitName);
+                          completedHabitsMap.remove(habitName);
+                          _saveHabits();
+                        });
+                      },
                     ),
                   );
                 }).toList(),
@@ -280,5 +170,13 @@ class _AddHabitScreenState extends State<AddHabitScreen> {
         ),
       ),
     );
+  }
+
+  Color _getColorFromHex(String hexColor) {
+    hexColor = hexColor.replaceAll('#', '');
+    if (hexColor.length == 6) {
+      hexColor = 'FF$hexColor'; // Add opacity if not included.
+    }
+    return Color(int.parse('0x$hexColor'));
   }
 }
